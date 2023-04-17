@@ -32,10 +32,16 @@ import cv2
 import tensorflow as tf
 import tqdm
 
+import os, sys
+
+parent = os.path.abspath('.')
+print(parent)
+sys.path.insert(1, parent)
+
 # https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/installation.md
 from object_detection.utils import dataset_util
-from bstld.read_label_file import get_all_labels
-from bstld.tf_object_detection import constants
+from read_label_file import get_all_labels
+from tf_object_detection import constants
 
 
 def label_id(label_string):
@@ -74,7 +80,7 @@ def create_object_detection_tfrecords(labels, tfrecords_path, dataset_folder, se
     """
 
     shuffle(labels)
-    writer = tf.python_io.TFRecordWriter(tfrecords_path)
+    writer = tf.io.TFRecordWriter(tfrecords_path)
     for label in tqdm.tqdm(labels, desc='Creating {}-set'.format(set_name)):
         image_path = os.path.join(dataset_folder, label['path'])
         image = cv2.imread(image_path)
@@ -146,12 +152,12 @@ def create_datasets(config):
     train_labels = get_all_labels(config['train_yaml'])
     test_labels = get_all_labels(config['test_yaml'])
 
-    if config['additional_yaml']:
-        additional_labels = get_all_labels(config['additional_yaml'])
+    #if config['additional_yaml']:
+    #    additional_labels = get_all_labels(config['additional_yaml'])
 
     # Split training labels into training and validation for "more correct" validation
     train_labels, valid_labels = split_train_labels(train_labels)
-    train_labels.extend(additional_labels)  # add unappealing images to training set
+    #train_labels.extend(additional_labels)  # add unappealing images to training set
 
     if not os.path.isdir(config['dataset_folder']) or\
             not os.path.isdir(os.path.join(config['dataset_folder'], 'rgb')):
@@ -191,4 +197,5 @@ def parse_args():
 
 if __name__ == '__main__':
     config = parse_args()
+    #print(config)
     create_datasets(config)
